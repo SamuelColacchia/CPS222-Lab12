@@ -9,6 +9,8 @@
 
 #include "huffman.h"
 #include <climits>
+int test = 0;
+
 
 HuffmanTree::HuffmanTree()
   : _root(NULL)
@@ -32,19 +34,78 @@ void HuffmanTree::write(ostream& treefile) const
 
 void HuffmanTree::fillIn(istream& document)
 {
-/* STUDENT CODE GOES HERE.  REMOVE THIS LINE */
+  char c;
+  Node * leftChild;
+  Node * rightChild;
+  Node * parent;
+
+  array<int, CHAR_MAX + 1> occurance = { 0 };
+  // int occurance = new int[CHAR_MAX + 1];
+  while (!document.eof())
+  {
+    document.get(c);
+    if (!document.eof())
+    {
+      occurance[int(c)] = occurance[int(c)] + 1;
+    }
+  }
+  priority_queue<Node *, vector<Node *>, HuffmanTree::NodeFrequencyComparator> huffmanQueue;
+
+  for (int i = 0; i < occurance.size(); i++)
+  {
+    //LeafNode(char character, int frequency = 0);
+    if (occurance[i] > 0)
+    {
+      Node * newLeaf = new LeafNode(char(i), occurance[i]);
+      huffmanQueue.push(newLeaf);
+    }
+    else
+    {
+      Node * newLeaf = new LeafNode(EOF_CHAR, 1);
+      huffmanQueue.push(newLeaf);
+    }
+    cout << occurance[i] << endl;
+  }
+
+  while(huffmanQueue.size()>1){
+    leftChild = huffmanQueue.top();
+    huffmanQueue.pop();
+    rightChild = huffmanQueue.top();
+    huffmanQueue.pop();
+    parent = new InternalNode(leftChild,rightChild);
+    huffmanQueue.push(parent);
+  }
+  if(huffmanQueue.size() == 1){
+    parent = huffmanQueue.top();
+    _root = parent;
+  }
 }
 
 
-void HuffmanTree::compress(istream& originalDocument,
-                           ostream& compressedDocument) const
+void HuffmanTree::compress(istream& originalDocument, ostream& compressedDocument) const
 {
-/* STUDENT CODE GOES HERE.  REMOVE THIS LINE */
+  int *bits;
+  int *count;
+  char c;
+
+  createCodeTable(bits, count);
+  while (!originalDocument.eof())
+  {
+    originalDocument.get(c);
+    if (!originalDocument.eof())
+    {
+      insertBits(compressedDocument, bits[c], count[c]);
+    }
+    else
+    {
+      insertBits(compressedDocument, bits[EOF_CHAR], count[EOF_CHAR]);
+      flushBits(compressedDocument);
+    }
+  }
 }
 
 
-void HuffmanTree::decompress(istream& compressedDocument,
-                             ostream& decompressedDocument) const
+void HuffmanTree::decompress(istream& compressedDocument, ostream& decompressedDocument) const
 {
   Node *currentNode = _root;
   int currentBit;

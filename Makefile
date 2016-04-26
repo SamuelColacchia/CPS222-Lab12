@@ -5,10 +5,9 @@
 # by using diff to compare them.
 
 huffman:	huffman.o node.o driver.o
-	g++ -o $@ $^
+	g++ -std=c++11 -o $@ $^
 
 huffman.o:
 
 %.o:	%.cc
-	g++ -c $<
-
+	g++ -std=c++11 -c $<
